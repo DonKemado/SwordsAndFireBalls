@@ -125,6 +125,56 @@ class Juego {
 
         alert("Unidades recuperadas!");
     }
+    //Depesdir unidad
+    despedirUnidades() {
+        //Verificamos que haya unidades que despeddir
+        if (this.ejercitoJugador.length === 0) {
+            alert("No tienes unidades que despedir");
+            return;
+        }
+        //Mostrar unidades para pdoer despedirlas
+        let listaUnidades = "***DESEPDIR UNIDADES***\n";
+        listaUnidades += "Selecciona la unidad a despedir: \n\n";
+        for (let i = 0; i < this.ejercitoJugador.length; i++) {
+            const unidad = this.ejercitoJugador[i];
+            listaUnidades += `${i + 1}. ${unidad.tipo} | Vida: ${unidad.puntosVida} | Ataque: ${unidad.poderAtaque}`;
+
+            //Mostrar oro a recuperar
+            if (unidad.tipo === 'Guerrero') {
+                listaUnidades += ` | Oro recuperado: 500`;
+            } else if (unidad.tipo === 'Ladron') {
+                listaUnidades += ` | Oro recuperado: 750`;
+            }else if (unidad.tipo === 'Mago') {
+                listaUnidades += ` | Oro recuperado: 1000`;
+            }
+            listaUnidades += `\n`;
+        }
+        listaUnidades += `\n0.Cancelar`;
+
+        //Usuario seleccione usted que unidad no va a daºr de comer a sus hijos este mes
+        const seleccion = parseInt(prompt(listaUnidades));
+        if (seleccion === 0) {
+            alert("CANCELADISIMO");
+            return;
+        }
+        //Por si el usuario es bobonsio
+        if (isNaN(seleccion || seleccion < 1 || seleccion > this.ejercitoJugador.length)) {
+            alert("Venga no me jodas :O");
+            return;
+        }
+        //Unidad seleccionada
+        //Como se me vuelva a olvidar un -1, me corto un brazo
+        const unidadDespedida = this.ejercitoJugador[seleccion - 1];
+        let oroRecuperado = 0;
+        if (unidadDespedida.tipo === 'Guerrero')oroRecuperado = 500;
+        else if (unidadDespedida.tipo === 'Ladron')oroRecuperado = 750;
+        else if (unidadDespedida.tipo === 'Mago')oroRecuperado = 1000;
+        //Eliminar unidad ejercito
+        this.ejercitoJugador.splice(seleccion - 1, 1);
+        //Añadir oro
+        this.oro += oroRecuperado;
+        alert(`${unidadDespedida.tipo} despedido. Has recuperado ${oroRecuperado} de oro`);
+    }
 
     //Verificacion de que el juego termina
     verificarFin() {
