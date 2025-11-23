@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Juego JavaScript</title>
+</head>
+<body>
+    <script src="juego.js"></script>
+    <script>
+        //INICIO JUEGO
+        const juego = new Juego();
+        juego.elegirDificultad();
+
+        //Bucle prinsipal
+        let estado = 'continuar';
+        while (estado === 'continuar') {
+            estado = juego.mostrarMenu();
+
+            //Verificar fin
+            const resultado = juego.verificarFin();
+            if (resultado !== 'continuar') {
+                alert(`***FIN DEL JUEGO***\nHas ${resultado.toUpperCase()}!`);
+                break;
+            }
+        }
+    </script>
+</body>
+</html>
