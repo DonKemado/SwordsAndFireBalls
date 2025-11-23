@@ -4,7 +4,7 @@ class Juego {
         this.rondasJugadas = 0;
         this.derrotasMax = 2;
         this.derrotasNow = 0;
-        this.oro = 4000; //Nos tocará elegir la cantidad incial
+        this.oro = 6000; //Nos tocará elegir la cantidad incial
         this.intentosContratacion = 6;
         this.recuperacionDisponible = false;
         this.ejercitoJugador = [];
@@ -178,42 +178,42 @@ class Juego {
 
     //Verificacion de que el juego termina
     verificarFin() {
-        if (this.rondasJugadas >= this.rondas) {
-            return 'ganado';
-        } else if (this.derrotasNow >= this.derrotasMax) {
-            return 'perdido';
-        }
-        return 'continuar';
+    //Si pierde 2 combates
+    if (this.derrotasNow >= this.derrotasMax) {
+        return 'perdido';
     }
+    //Si jugó todos los combates requeridos, gana
+    else if (this.rondasJugadas >= this.rondas) {
+        return 'ganado';
+    }
+    return 'continuar';
+}
 
     gestionarContratacion() {
         //Gestion de errores
         //Verificar intentos
         if (this.intentosContratacion <= 0) {
             alert("No te quedan intentos");
-            return; // ==== CAMBIAR ESTE RETURN ====
+            return;
         }
         //Espacio en ejercito
         if (this.ejercitoJugador.length >= 5) {
             alert("Tienes 5/5 unidades");
-            return; // ==== CAMBIAR ESTE RETURN ====
+            return;
         }
         //Verificar oro mínimo
         if (this.oro < 1000) {
             alert("No tienes suficiente oro");
-            return; // ==== CAMBIAR ESTE RETURN ====
+            return;
         }
 
-        // ==== NUEVO: BUCLE PARA PODER RE-ROLLEAR ====
         let volverAlMenu = false;
 
         while (!volverAlMenu && this.intentosContratacion > 0) {
-            //
             //Generar mercenarios
-            //Creamos un número random
             const mercenarios = [];
             for (let i = 0; i < 3; i++) {
-                const random = Math.random();
+                const random = Math.random(); //Creamos un número random
                 let tipo, costo, vidaMin, vidaMax;
                 //Dependiendo del numero que salga se generara, uno u otro tipo
                 if (random < 0.5) {
@@ -259,8 +259,9 @@ class Juego {
                 menuContratacion += `${numero}.${merc.tipo} | Vida: ${merc.puntosVida} | Ataque: ${merc.poderAtaque} | Costo: ${merc.costo} | ${estado}\n`;
             }
 
-            // ==== NUEVA OPCION 4 PARA RE-ROLLEAR ====
+            //Opción para el RE-ROLL
             menuContratacion += `\n4. Ver más mercenarios (gasta 1 intento)`;
+            //Opción para cancelar y volver al menu
             menuContratacion += `\n0. Volver al menu`;
             menuContratacion += `\n\nIntentos restantes ${this.intentosContratacion}/6`;
 
@@ -272,7 +273,7 @@ class Juego {
                 alert("Contratacion cancelada");
                 volverAlMenu = true;
             } else if (seleccion === 4) {
-                // ==== RE-ROLLEAR: gastar intento y mostrar nuevos mercenarios ====
+                //RE-ROLL
                 this.intentosContratacion--;
                 alert("Buscando nuevos mercenarios...");
                 // El bucle continuará con nuevos mercenarios
@@ -283,6 +284,9 @@ class Juego {
                     alert("Este mercenario no es contratable (falta oro o espacio)");
                 } else {
                     //Ahora toca crear una y añadirla
+                    //Primero restamos el oro
+                    this.oro -= mercenarioSeleccionado.costo;
+
                     const nuevaUnidad = new Unidad(
                         mercenarioSeleccionado.tipo,
                         mercenarioSeleccionado.puntosVida,
@@ -291,17 +295,16 @@ class Juego {
                     );
 
                     this.ejercitoJugador.push(nuevaUnidad);
-                    this.oro -= mercenarioSeleccionado.costo;
-                    alert(`Has contrarado a un ${mercenarioSeleccionado.tipo} por ${mercenarioSeleccionado.costo} de oro`);
-                    volverAlMenu = true; // ==== VOLVER AL MENÚ PRINCIPAL ====
+                    alert(`Has contratado a un ${mercenarioSeleccionado.tipo} por ${mercenarioSeleccionado.costo} de oro`);
+                    volverAlMenu = true; //VOLVER AL MENU PRINCPAL, me cago en la leche QUE ESTA FALLLAAANDO
                 }
                 this.intentosContratacion--;
             } else {
                 alert("Seleccion no valida");
             }
 
-            // ==== VERIFICAR SI SE ACABARON LOS INTENTOS ====
-            if (this.intentosContratacion <= 0) {
+            //Verificar si intentos es menor que 0
+            if (this.intentosContratacion < 0) {
                 alert("¡Se te acabaron los intentos de contratación!");
                 volverAlMenu = true;
             }
@@ -347,7 +350,7 @@ class Juego {
             const puntosVida = Math.floor(Math.random() * (vidaMax - vidaMin + 1)) + vidaMin;
             const poderAtaque = Math.floor(Math.random() * (20 - 10 + 1)) + 10;
 
-            // ==== CAMBIO 1: AÑADIR CALCULO DE COSTO ====
+            // CALCULAR COSTO SEGÚN TIPO
             let costo = 0;
             if (tipo === "Guerrero") costo = 1000;
             else if (tipo === "Ladron") costo = 1500;
@@ -364,7 +367,11 @@ class Juego {
         let logCombate = "***REGISTRO COMBATE***\n";
 
         while (this.ejercitoJugador.length > 0 && this.ejercitoEnemigo.length > 0) {
-            const unidadJugador = this.ejercitoJugador[0];
+            //Busca la primera unidad del jugador que no esta KO
+            let unidadJugadorIndex = this.ejercitoJugador.findIndex(unidad => unidad.puntosVida > 0);
+            if (unidadJugadorIndex === -1) break; //Si todos KO
+
+            const unidadJugador = this.ejercitoJugador[unidadJugadorIndex];
             const unidadEnemiga = this.ejercitoEnemigo[0];
 
             logCombate += `\n***RONDA ${rondasGanadas + rondasPerdidas + 1} ***\n`;
@@ -384,12 +391,11 @@ class Juego {
             if (unidadJugador.tipo === 'Mago' && !unidadJugador.bolaFuegoUsada) {
                 dañoJugador = 60;
                 unidadJugador.bolaFuegoUsada = true;
-                logCombate += `FIIIIIREBAAAAAL`;
+                logCombate += `FIIIIIREBAAAAAL\n`;
             }
 
             //Habilidad especial de guerrero (ataques concentrados)
             if (unidadJugador.tipo === 'Guerrero' && unidadJugador.usosHabilidad > 0) {
-                // ==== CAMBIO 2: AÑADIR DEFINICIÓN DE dañoExtra ====
                 const dañoExtra = Math.floor(Math.random() * 6) + 5;
                 dañoJugador += dañoExtra;
                 unidadJugador.usosHabilidad--;
@@ -414,13 +420,12 @@ class Juego {
                 || (unidadEnemiga.tipo === 'Guerrero' && unidadJugador.tipo === 'Ladron')
                 || (unidadEnemiga.tipo === 'Ladron' && unidadJugador.tipo === 'Mago')) {
                 dañoEnemigo = Math.floor(dañoEnemigo * 1.5);
-                logCombate += `AUMENTO\n Daño aumentado a ${dañoEnemigo}\n`;
+                logCombate += `AUMENTO\nDaño aumentado a ${dañoEnemigo}\n`;
             }
             //Habilidad especial ladron (JUGADOR)
             if (unidadJugador.tipo === 'Ladron' && unidadJugador.usosHabilidad > 0) {
-                // ==== CAMBIO 3: CORREGIR CONDICIÓN Math.random() ====
                 if (Math.random() < 0.35) {
-                    logCombate += `Me desaparezco\n`;
+                    logCombate += `Me desaparezco(ladrón no recibe daño)\n`;
                     unidadJugador.usosHabilidad--;
                     continue; //Siguiente ronda
                 }
@@ -428,17 +433,18 @@ class Juego {
             //Habilidad ladron enemigo
             if (unidadEnemiga.tipo === 'Ladron' && unidadEnemiga.usosHabilidad > 0) {
                 if (Math.random() < 0.35) {
-                    logCombate += `ESQUIVO (leo tus derechos, no tenes)`;
+                    logCombate += `Esquivo leo tus derechos, no tenes(ladrón enemigo no recibe daño)`;
                     unidadEnemiga.usosHabilidad--;
                     continue; //El ladron esquiva, por lo que no recibe daño
                 }
             }
             //Aplicar daño del enemigo
             unidadJugador.puntosVida -= dañoEnemigo;
-            logCombate += `Ataque: ${dañoEnemigo} | Jugador vida restante: ${Math.max(0, unidadJugador.puntosVida)}\n`;
+            logCombate += `Ataque enemigo: ${dañoEnemigo} | Jugador vida restante: ${Math.max(0, unidadJugador.puntosVida)}\n`;
+
             //Verificar si tu unidad c murio
+            // JUGADOR NO SE ELIMINA
             if (unidadJugador.puntosVida <= 0) {
-                this.ejercitoJugador.shift();
                 logCombate += `K.O.\n`;
                 rondasPerdidas++;
             }
@@ -447,17 +453,21 @@ class Juego {
         let resultado = "";
         let oroGanado = 0;
 
-        if (this.ejercitoEnemigo.length === 0) {
+        // Verificar si el jugador tiene unidades activas
+        const jugadorTieneUnidadesActivas = this.ejercitoJugador.some(unidad => unidad.puntosVida > 0);
+
+        if (this.ejercitoEnemigo.length === 0 && jugadorTieneUnidadesActivas) {
             resultado = "VICTORIAAA";
-            this.rondasJugadas++;
             oroGanado = cantidadEnemigos * 500;
             this.oro += oroGanado;
             this.recuperacionDisponible = true;
+            this.intentosContratacion = 6;
         } else {
             resultado = "Derrota...";
             this.derrotasNow++;
+            this.intentosContratacion = 6;
         }
-
+        this.rondasJugadas++; 
         //Mostrar resultado final
         logCombate += `\n*** RESULTADO FINAL ***\n`;
         logCombate += `${resultado}\n`;
