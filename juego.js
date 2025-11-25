@@ -192,7 +192,7 @@ class Juego {
     gestionarContratacion() {
         //Gestion de errores
         //Verificar intentos
-        if (this.intentosContratacion <= 0) {
+        if (this.intentosContratacion < 0) {
             alert("No te quedan intentos");
             return;
         }
@@ -271,12 +271,13 @@ class Juego {
             //Procesar eleccion
             if (seleccion === 0) {
                 alert("Contratacion cancelada");
+                this.intentosContratacion--;
                 volverAlMenu = true;
             } else if (seleccion === 4) {
                 //RE-ROLL
                 this.intentosContratacion--;
                 alert("Buscando nuevos mercenarios...");
-                // El bucle continuará con nuevos mercenarios
+                //El bucle continuará con nuevos mercenarios
             } else if (seleccion >= 1 && seleccion <= 3) {
                 const mercenarioSeleccionado = mercenarios[seleccion - 1];
 
@@ -401,7 +402,15 @@ class Juego {
                 unidadJugador.usosHabilidad--;
                 logCombate += `ATAQUEEE +${dañoExtra} daño\n`;
             }
-            //Aplicar daño
+            //Habilidad ladron enemigo
+            if (unidadEnemiga.tipo === 'Ladron' && unidadEnemiga.usosHabilidad > 0) {
+                if (Math.random() < 0.35) {
+                    logCombate += `Esquivo leo tus derechos, no tenes(ladrón enemigo no recibe daño)`;
+                    unidadEnemiga.usosHabilidad--;
+                    continue; //El ladron esquiva, por lo que no recibe daño
+                }
+            }
+            //Aplicar daño AL enemigo
             unidadEnemiga.puntosVida -= dañoJugador;
             logCombate += `Tu ataque: ${dañoJugador} daño | Enemigo vida restante: ${Math.max(0, unidadEnemiga.puntosVida)}\n`;
 
@@ -430,15 +439,8 @@ class Juego {
                     continue; //Siguiente ronda
                 }
             }
-            //Habilidad ladron enemigo
-            if (unidadEnemiga.tipo === 'Ladron' && unidadEnemiga.usosHabilidad > 0) {
-                if (Math.random() < 0.35) {
-                    logCombate += `Esquivo leo tus derechos, no tenes(ladrón enemigo no recibe daño)`;
-                    unidadEnemiga.usosHabilidad--;
-                    continue; //El ladron esquiva, por lo que no recibe daño
-                }
-            }
-            //Aplicar daño del enemigo
+            
+            //Aplicar daño DEL enemigo
             unidadJugador.puntosVida -= dañoEnemigo;
             logCombate += `Ataque enemigo: ${dañoEnemigo} | Jugador vida restante: ${Math.max(0, unidadJugador.puntosVida)}\n`;
 
@@ -446,6 +448,7 @@ class Juego {
             // JUGADOR NO SE ELIMINA
             if (unidadJugador.puntosVida <= 0) {
                 logCombate += `K.O.\n`;
+                unidadJugador.puntosVida = 0;
                 rondasPerdidas++;
             }
         }
@@ -458,15 +461,15 @@ class Juego {
 
         if (this.ejercitoEnemigo.length === 0 && jugadorTieneUnidadesActivas) {
             resultado = "VICTORIAAA";
-            oroGanado = cantidadEnemigos * 500;
+            oroGanado = cantidadEnemigos * 500; //CAMBIALO PUTO VAGO
             this.oro += oroGanado;
-            this.recuperacionDisponible = true;
             this.intentosContratacion = 6;
         } else {
             resultado = "Derrota...";
             this.derrotasNow++;
             this.intentosContratacion = 6;
         }
+        this.recuperacionDisponible = true;
         this.rondasJugadas++; 
         //Mostrar resultado final
         logCombate += `\n*** RESULTADO FINAL ***\n`;

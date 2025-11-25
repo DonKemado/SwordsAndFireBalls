@@ -21,8 +21,9 @@
             if (resultado !== 'continuar') {
                 alert(`***FIN DEL JUEGO***\nHas ${resultado.toUpperCase()}!`);
                 break;
-            }else if(intentosContratacion === 0 && juego.jugador.unidades.length === 0){
+            }else if(juego.intentosContratacion === 0 && juego.ejercitoJugador.length === 0){
                 alert(`***FIN DEL JUEGO***\nHas PERDIDO! No te quedan unidades ni intentos de contratación.`);
+                
                 break;
             }
         }
