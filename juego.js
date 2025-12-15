@@ -4,7 +4,7 @@ class Juego {
         this.rondasJugadas = 0;
         this.derrotasMax = 2;
         this.derrotasNow = 0;
-        this.oro = 6000; //Nos tocará elegir la cantidad incial
+        this.oro = 5000; //Nos tocará elegir la cantidad incial
         this.intentosContratacion = 6;
         this.recuperacionDisponible = false;
         this.ejercitoJugador = [];
@@ -33,7 +33,8 @@ class Juego {
             "3. Atacar",
             "4. Recuperarse",
             "5.Ver estado de las unidades",
-            "6. Salir del juego"
+            "6.Guardar el juego",
+            "7. Salir del juego"
         ];
         //Lo que enseña nuestro menu principal
         let menuTexto = "***MENU***\n";
@@ -42,7 +43,7 @@ class Juego {
         menuTexto += `Intentos de contratación: ${this.intentosContratacion}\n\n`;
         menuTexto += opciones.join("\n");
 
-        const eleccion = prompt(menuTexto + "\n\nSeleccione una opcion (1-6):");
+        const eleccion = prompt(menuTexto + "\n\nSeleccione una opcion (1-7):");
         const opcionNumero = parseInt(eleccion);
 
         //Opciones
@@ -63,6 +64,13 @@ class Juego {
                 this.verEstado();
                 break;
             case 6:
+                if (confirm("Guardar partida?")) {
+                    this.guardarPartida();
+                    alert("Partida guardada correctamente");
+                    return;
+                }
+                break;
+            case 7:
                 //Creo que se hace más fácil con un confirm
                 let salir = prompt("Estas seguro de que quieres salir?");
                 if (salir === 'si') {
@@ -178,16 +186,16 @@ class Juego {
 
     //Verificacion de que el juego termina
     verificarFin() {
-    //Si pierde 2 combates
-    if (this.derrotasNow >= this.derrotasMax) {
-        return 'perdido';
+        //Si pierde 2 combates
+        if (this.derrotasNow >= this.derrotasMax) {
+            return 'perdido';
+        }
+        //Si jugó todos los combates requeridos, gana
+        else if (this.rondasJugadas >= this.rondas) {
+            return 'ganado';
+        }
+        return 'continuar';
     }
-    //Si jugó todos los combates requeridos, gana
-    else if (this.rondasJugadas >= this.rondas) {
-        return 'ganado';
-    }
-    return 'continuar';
-}
 
     gestionarContratacion() {
         //Gestion de errores
@@ -439,7 +447,7 @@ class Juego {
                     continue; //Siguiente ronda
                 }
             }
-            
+
             //Aplicar daño DEL enemigo
             unidadJugador.puntosVida -= dañoEnemigo;
             logCombate += `Ataque enemigo: ${dañoEnemigo} | Jugador vida restante: ${Math.max(0, unidadJugador.puntosVida)}\n`;
@@ -470,7 +478,7 @@ class Juego {
             this.intentosContratacion = 6;
         }
         this.recuperacionDisponible = true;
-        this.rondasJugadas++; 
+        this.rondasJugadas++;
         //Mostrar resultado final
         logCombate += `\n*** RESULTADO FINAL ***\n`;
         logCombate += `${resultado}\n`;
@@ -482,5 +490,75 @@ class Juego {
         }
 
         alert(logCombate);
+    }
+
+    //METODO PARA GUARDAR LA PARTIDA
+    guardarPartida() {
+        //Objeto con todos los datos de la partida
+        const datosPartida = {
+            //Config
+            rondas: this.rondas,
+            derrotasMax: this.derrotasMax,
+            //EstadoActual
+            rondasJugadas: this.rondasJugadas,
+            derrorasNow: this.derrotasNow,
+            oro: this.oro,
+            intentosContratacion: this.intentosContratacion,
+            recuperacionDisponible: this.recuperacionDisponible,
+            //Ejercito jugador y enemigo(Aunque se puede guardar mientras estas en combate?)
+            ejercitoJugador: this.ejercitoJugador,
+            ejercitoEnemigo: this.ejercitoEnemigo
+        };
+
+        //Convertir a JSON y guardar el localStorage
+        localStorage.setItem('partidaGuardada', JSON.stringify(datosPartida));
+    }
+    cargarPartida() {
+        const datosJSON = localStorage.getItem('partidaGuardada');
+
+        if (!datosJSON) {
+            alert("No hay partida guardada");
+            return;
+        }
+        try {
+            const datos = JSON.parse(datosJSON);
+            //Restaurar todos los datos
+            this.rondas = datos.rondas;
+            this.derrotasMax = datos.derrotasMax;
+            this.rondasJugadas = datos.rondasJugadas;
+            this.oro = datos.oro;
+            this.intentosContratacion = datos.intentosContratacion;
+            this.recuperacionDisponible = datos.recuperacionDisponible;
+            //Objetos planos a instancias para el ejercito
+            this.ejercitoJugador = datos.ejercitoJugador.map(unidadData => new unidad(
+                unidadData.tipo,
+                unidadData.puntosVida,
+                unidadData.poderAtaque,
+                unidadData.costo
+            ));
+            // Restaurar propiedades adicionales de las unidades
+            this.ejercitoJugador.forEach((unidad, index) => {
+                const unidadData = datos.ejercitoJugador[index];
+                unidad.puntosVidaMaximos = unidadData.puntosVidaMaximos;
+                unidad.gananciaDespido = unidadData.gananciaDespido;
+                unidad.usosHabilidad = unidadData.usosHabilidad;
+                unidad.usosMaximos = unidadData.usosMaximos;
+                unidad.bolaFuegoUsada = unidadData.bolaFuegoUsada;
+            });
+            // Hacer lo mismo para el ejército enemigo si existe
+        this.ejercitoEnemigo = datos.ejercitoEnemigo ? 
+            datos.ejercitoEnemigo.map(unidadData => 
+                new Unidad(
+                    unidadData.tipo,
+                    unidadData.puntosVida,
+                    unidadData.poderAtaque,
+                    unidadData.costo
+                )
+            ) : [];
+        
+        alert("Partida cargada correctamente");
+        }catch(error) {
+            alert(`Error al cargar ${error.message}`);
+        }
     }
 }
