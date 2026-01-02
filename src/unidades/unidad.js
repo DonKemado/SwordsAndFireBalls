@@ -1,7 +1,6 @@
 class Unidad {
 
-    constructor(nombre, puntosVidaMax, puntosAtaque, tipo) {
-        this.nombre = nombre;
+    constructor(puntosVidaMax, puntosAtaque, tipo) {
         this.puntosVidaMax = puntosVidaMax;
         this.puntosVida = puntosVidaMax;
         this.puntosAtaque = puntosAtaque;
@@ -16,8 +15,8 @@ class Unidad {
      * Comprueba que la unidad no este KO, y si tiene ventaja de tipo sobre el objetivo
      */
     atacar(objetivo) {
-        if (!this.estaVida()) {
-            console.log(`${this.nombre} no puede atacar porque está KO.`);
+        if (!this.estaViva()) {
+            alert(`${this.tipo} no puede atacar porque está KO.`);
             return;
         }
 
@@ -25,10 +24,10 @@ class Unidad {
 
         if (this.tieneVentajaSobre(objetivo)) {
             danyo = Math.floor(danyo * 1.5); //Para la ventaja de tipo
-            console.log('¡Ventaja de tipo! Daño aumentado.');
+            alert('¡Ventaja de tipo! Daño aumentado.');
         }
 
-        console.log(`${this.nombre} ataca a ${objetivo.nombre} causando ${danyo} puntos de daño.`);
+        alert(`${this.tipo} ataca a ${objetivo.tipo} causando ${danyo} puntos de daño.`);
         objetivo.recibirDanyo(danyo);
     }
 
@@ -40,15 +39,16 @@ class Unidad {
      */
     recibirDanyo(danyo) {
         if (this.estaKO) return;
+        
         this.puntosVida -= danyo;
         if (this.puntosVida <= 0) {
-            this.puntosAtaque = 0;
+            this.puntosVida = 0;
             this.estaKO = true;
-            console.log(`${this.nombre} ha sido derrotado y está KO.`);
+            alert(`${this.tipo} ha sido derrotado y está KO.`);
         }
     }
 
-    estaVida() {
+    estaViva() {
         return !this.estaKO;
     }
 
@@ -60,7 +60,7 @@ class Unidad {
         this.puntosVida = Math.min(this.puntosVida + vidaRecuperada, this.puntosVidaMax);
         this.estaKO = false;
 
-        console.log(`${this.nombre} se ha recuperado y ahora tiene ${this.puntosVida} puntos de vida.`);
+        alert(`${this.tipo} se ha recuperado y ahora tiene ${this.puntosVida} puntos de vida.`);
     }
 
     /**
@@ -68,7 +68,7 @@ class Unidad {
      * @returns Devuelve un string con info de la Unidad
      */
     getEstado() {
-        return `${this.nombre} (${this.tipo})
+        return `${this.tipo}
             Vida: ${this.puntosVida}/${this.puntosVidaMax}
             Ataque: ${this.puntosAtaque}
             Estado: ${this.estaKO ? "KO" : "Activo"}
