@@ -6,42 +6,7 @@
 </head>
 
 <body>
-    <script src="unidad.js"></script>
-    <script src="juego.js"></script>
-    <script>
-        //INICIO JUEGO
-        const juego = new Juego();
-
-        //AL INICIAR PARTIDA HAY QUE ELEGIR SI CARGAR LA PARTIDA GUARDADA
-        const partidaGuardada = localStorage.getItem('partidaGuardada');
-        if (partidaGuardada) {
-            const cargar = confirm("Quieres cargar la partida guardada?\n\nCancelar = Nueva Partida")
-            if (cargar) {
-                juego.cargarPartida();
-            } else {
-                juego.elegirDificultad();//Partida Nueva
-            }
-        } else {
-            juego.elegirDificultad();//Partida Nueva
-        }
-
-        //Bucle prinsipal
-        let estado = 'continuar';
-        while (estado === 'continuar') {
-            estado = juego.mostrarMenu();
-
-            //Verificar fin
-            const resultado = juego.verificarFin();
-            if (resultado !== 'continuar') {
-                alert(`***FIN DEL JUEGO***\nHas ${resultado.toUpperCase()}!`);
-                break;
-            } else if (juego.intentosContratacion === 0 && juego.ejercitoJugador.length === 0) {
-                alert(`***FIN DEL JUEGO***\nHas PERDIDO! No te quedan unidades ni intentos de contratación.`);
-
-                break;
-            }
-        }
-    </script>
+    <script type="module" src="main.js"></script>
 </body>
 
 </html>
