@@ -4,7 +4,7 @@ export class Ladron extends Unidad {
 
     constructor() {
 
-        const puntosVidaMax = Math.floor(Math.random() * (80 - 60 + 1)) + 60; //Vida entre 60 y 80
+        const puntosVidaMax = Math.floor(Math.random() * (80 - 50 + 1)) + 50; //Vida entre 50 y 80
         const puntosAtaque = Math.floor(Math.random() * (20 - 10 + 1)) + 10; //Ataque entre 10 y 20
 
         super(puntosVidaMax, puntosAtaque, 'Ladron');
@@ -24,25 +24,20 @@ export class Ladron extends Unidad {
         if (this.estaKO) return;
 
         //Comprobamos si esquiva
-        if (Math.random() < this.probabilidadEsquivar) {
-            this.usosMax--;
+        if (this.usosHabilidadEspecial > 0 && Math.random() < this.probabilidadEsquivar) {
+            this.usosHabilidadEspecial--;
             alert(`${this.tipo} ha esquivado el ataque.`);
             return;
         }
 
-        this.puntosVida -= danyo;
-
-        if (this.puntosVida <= 0) {
-            this.puntosVida = 0;
-            this.estaKO = true;
-            alert(`${this.tipo} ha sido derrotado y está KO.`);
-        }
+        super.recibirDanyo(danyo);
+        
     }
 
     recuperar() {
         super.recuperar();
         this.usosHabilidadEspecial = this.usosMax;
 
-        alert(`${this.tipo} se ha recuperado y ahora tiene ${this.puntosVida} puntos de vida y ${this.usosHabilidadEspecial} esquives disponibles.`);
+        alert(`${this.tipo} se ha recuperado y ahora tiene ${this.puntosVida} puntos de vida y ${this.usosHabilidadEspecial} esquivas disponibles.`);
     }
 }
