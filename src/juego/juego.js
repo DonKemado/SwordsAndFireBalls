@@ -10,84 +10,185 @@ export default class Juego {
         this.ejercitoJugador = [];
         this.ejercitoEnemigo = [];
         this.dificultad = '';
+        this.continuarJuego = true;
     }
+
     iniciarJuego() {
-        alert('¡Bienvenido a Swords and Fireballs!');
 
-        while (this.dificultad !== 'facil' && this.dificultad !== 'dificil') {
-            this.dificultad = prompt('Selecciona una dificultad: Facil o Dificil').toLowerCase();
+        alert('¡Bienvenido a Swords and FireBalls!');
+
+        do {
+            this.dificultad = prompt('Elige la dificultad: fácil o difícil').toLowerCase();
+        } while (this.dificultad !== 'facil' && this.dificultad !== 'dificil');
+        if (this.dificultad === 'facil') {
+            this.rondas = 2;
+        } else {
+            this.rondas = 4;
         }
-
-        this.rondas = this.dificultad === 'facil' ? 2 : 4;
-
-        while (this.mostrarMenuPrincipal() !== 'salir') { }
+        this.menuPrincipal();
     }
+    /**
+     * Este metodo muestra el menu principal y gestiona a traves de un switch las diferentes opciones
+     * @returns 
+     */
+    menuPrincipal() {
+        //Menu visual que vera nuestro jugador
+        let menuPrincipal = '***MENU***\n\n';
+        //Estadísticas del juego
+        menuPrincipal += `Rondas jugadas: ${this.rondasJugadas}/${this.rondas}`;
+        menuPrincipal += ` | Derrotas: ${this.derrotasNow}/${this.derrotasMax}\n`;
+        menuPrincipal += `Oro disponible: ${this.oro}`;
+        menuPrincipal += ` | Ejercutio Jugador: ${this.ejercitoJugador.length} unidades\n`;
+        menuPrincipal += `Intentos Contratación: ${this.intentosContratacion}\n\n`;
+        //Opciones del juego
+        menuPrincipal += '1. Contratar Unidades\n';
+        menuPrincipal += '2. Despedir Unidades\n';
+        menuPrincipal += '3. Combatir\n';
+        menuPrincipal += '4. Recuperar Unidades\n';
+        menuPrincipal += '5. Ver Estado de unidades\n';
+        menuPrincipal += '6. Guardar Partida\n';
+        menuPrincipal += '7. Salir';
 
-    mostrarMenuPrincipal() {
-        const opciones = [
-            "1. Contratar unidades",
-            "2. Despedir unidades",
-            "3. Atacar",
-            "4. Recuperarse",
-            "5.Ver estado de las unidades",
-            "6.Guardar el juego",
-            "7. Salir del juego"
-        ];
-        //Lo que enseña nuestro menu principal
-        let menuTexto = "***MENU***\n";
-        menuTexto += `Rondas: ${this.rondasJugadas}/${this.rondas} | Derrotas: ${this.derrotasNow}/${this.derrotasMax}\n`;
-        menuTexto += `Oro: ${this.oro} | Ejercito: ${this.ejercitoJugador.length}/5\n`;
-        menuTexto += `Intentos de contratación: ${this.intentosContratacion}\n\n`;
-        menuTexto += opciones.join("\n");
+        //Ahora el jugador tomará una decisión
+        let eleccion = parseInt(prompt(menuPrincipal));
 
-        const eleccion = prompt(menuTexto + "\n\nSeleccione una opcion (1-7):");
-        const opcionNumero = parseInt(eleccion);
-
-        //Opciones
-        switch (opcionNumero) {
+        switch (eleccion) {
             case 1:
                 this.contratarUnidades();
                 break;
             case 2:
-                this.despedirUnidad();
+                if (this.ejercitoJugador.length === 0) {
+                    alert('No tienes unidades para despedir.');
+                } else {
+                    this.despedirUnidades();
+                }
                 break;
             case 3:
-                this.combatir();
+                if (this.ejercitoJugador.length === 0) {
+                    alert('No tienes unidades para combatir.');
+                } else {
+                    this.combatir();
+                }
                 break;
             case 4:
-            case 4:
-                if (this.recuperacionDisponible) {
+                if (this.recuperacionDisponible && this.ejercitoJugador.length > 0) {
                     this.recuperarUnidades();
+                } else if (!this.recuperacionDisponible) {
+                    alert('No tienes la recuperacion disponible.');
                 } else {
-                    alert("No puedes recuperarte ahora.");
+                    alert('No tienes unidades para recuperar.');
                 }
                 break;
             case 5:
-                this.verEstado();
-                break;
-            case 6:
-                if (confirm("Guardar partida?")) {
-                    this.guardarPartida();
-                    alert("Partida guardada correctamente");
-                    return;
+                if (this.ejercitoJugador.length === 0) {
+                    alert('No tienes unidades en tu ejercito.');
+                } else {
+                    this.verEstadoUnidades();
                 }
                 break;
+            case 6:
+                this.guardarPartida();
+                break;
             case 7:
-                let salir = prompt("Estas seguro de que quieres salir?");
-                if (salir === 'si') {
-                    return 'salir';
-                } else {
-                    return 'continuar';
+                let confirmarSalir = confirm('Estas seguro de que queires salir?');
+                if (confirmarSalir) {
+                    return this.continuarJuego = false;
                 }
                 break;
             default:
-                alert("Opcion no valida, elige entre el 1 - 7");
+                alert('Opción no válida. Por favor, elige una opción del 1 al 7.');
+                break;
         }
-        return 'continuar';
     }
-
+    /**
+     * 
+     * @returns 
+     */
     contratarUnidades() {
-
+    //Verificaciones
+    if (this.ejercitoJugador.length >= 5) {
+        alert("Tu ejército ya está completo.");
+        return;
     }
+
+    if (this.intentosContratacion <= 0) {
+        alert("No te quedan intentos de contratación.");
+        return;
+    }
+
+    if (this.oro < 1000) {
+        alert("No tienes el oro mínimo para contratar (1000).");
+        return;
+    }
+    //Cada llamada consume intentos hasta que el jugador decida salir o se agoten
+    let salir = false;
+    while (!salir && this.intentosContratacion > 0 && this.ejercitoJugador.length < 5) {
+
+        this.intentosContratacion--;
+
+        //Generar 3 mercenarios
+        const mercenarios = [];
+        for (let i = 0; i < 3; i++) {
+            const rand = Math.random();
+            if (rand < 0.5) {
+                mercenarios.push({
+                    tipo: "Guerrero",
+                    coste: 1000,
+                    unidad: new Guerrero()
+                });
+            } else if (rand < 0.8) {
+                mercenarios.push({
+                    tipo: "Ladron",
+                    coste: 1500,
+                    unidad: new Ladron()
+                });
+            } else {
+                mercenarios.push({
+                    tipo: "Mago",
+                    coste: 2000,
+                    unidad: new Mago()
+                });
+            }
+        }
+
+        //Mostrar mercenarios
+        let texto = "*** MERCENARIOS DISPONIBLES ***\n";
+        mercenarios.forEach((m, index) => {
+            const estado = this.oro >= m.coste ? "Contratable" : "No contratable";
+            texto += `${index + 1}. ${m.tipo} - Coste: ${m.coste} oro (${estado})\n`;
+        });
+
+        texto += "\n0. No contratar a nadie";
+
+        const eleccion = parseInt(
+            prompt(
+                texto +
+                `\n\nIntentos restantes: ${this.intentosContratacion}` +
+                `\nOro actual: ${this.oro}`
+            )
+        );
+
+        if (eleccion === 0 || isNaN(eleccion)) {
+            alert("No has contratado a nadie.");
+            
+        } else if (eleccion >= 1 && eleccion <= 3) {
+            const elegido = mercenarios[eleccion - 1];
+            if (this.oro < elegido.coste) {
+                alert("No tienes oro suficiente para contratar esta unidad.");
+            } else {
+                this.oro -= elegido.coste;
+                this.ejercitoJugador.push(elegido.unidad);
+                alert(`${elegido.tipo} contratado con éxito.`);
+            }
+        } else {
+            alert("Selección no válida.");
+        }
+
+        // Preguntar si quiere seguir intentando
+        if (this.intentosContratacion > 0) {
+            salir = !confirm("¿Quieres seguir intentando contratar?");
+        }
+    }
+}
 
 }
